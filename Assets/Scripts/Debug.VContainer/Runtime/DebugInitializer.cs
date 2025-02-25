@@ -8,19 +8,34 @@ using UnityEngine.UI;
 using VContainer.Unity;
 
 namespace BashoKit.Debug.Runtime {
-    public class DebugInitializer : IStartable {
+    public class DebugInitializer : ITickable {
         private readonly DebugInstanceRegistry _registry;
         private readonly DebugCanvasReferences _debugReferences;
         
         private readonly Dictionary<string, Button> _tabButtons = new Dictionary<string, Button>();
         private readonly Dictionary<string, GameObject> _tabPanels = new Dictionary<string, GameObject>();
+        private DebugCanvasView _canvasView;
+        
+        private bool IsInitialized => _canvasView != null;
 
         public DebugInitializer(DebugInstanceRegistry registry, DebugCanvasReferences debugReferences) {
             _registry = registry;
             _debugReferences = debugReferences;
         }
+        
+        public void Tick() {
+            if (Input.GetKeyUp(KeyCode.F1)) {
+                if (!IsInitialized) Initialize();
+                _canvasView?.ToggleDebugCanvas();
+            } else if (_canvasView is { IsVisible: true } && Input.GetKeyUp(KeyCode.Escape)) {
+                _canvasView?.CloseDebugCanvas();
+            }
+        }
 
-        public void Start() {
+        public void Initialize() {
+            var canvasGo = Object.Instantiate(_debugReferences.CanvasPrefab);
+            _canvasView = canvasGo.GetComponent<DebugCanvasView>();
+            
             var debugMethods = DebugResolver.GetDebugActions();
 
             // Group by header, determined from the declaring type.
@@ -28,15 +43,12 @@ namespace BashoKit.Debug.Runtime {
                 var headerAttr = tuple.method.DeclaringType.GetCustomAttribute<DebugTabAttribute>();
                 return headerAttr != null ? headerAttr.TabName : "N/A";
             });
-            
-            var canvasGo = Object.Instantiate(_debugReferences.CanvasPrefab);
-            var canvasView = canvasGo.GetComponent<DebugCanvasView>();
 
             foreach (var debugGroup in groupedMethods) {
                 // Instantiate a panel for each group
-                var panel = Object.Instantiate(_debugReferences.cheatPanelContainerPrefab, canvasView.PanelContainer);
+                var panel = Object.Instantiate(_debugReferences.cheatPanelContainerPrefab, _canvasView.PanelContainer);
                 var panelContentTransform = panel.transform;
-                CreateTab(canvasView, debugGroup.Key, panel);
+                CreateTab(_canvasView, debugGroup.Key, panel);
 
                 // Create buttons for each method with header
                 IEnumerable<IGrouping<string,(MethodInfo method, DebugActionAttribute actionAttribute)>> headersGrouping = debugGroup.GroupBy(p => p.actionAttribute.HeaderName).ToList();
@@ -53,6 +65,8 @@ namespace BashoKit.Debug.Runtime {
 
         private void SelectFirstTab(IEnumerable<IGrouping<string, (MethodInfo method, DebugActionAttribute actionAttribute)>> groupedMethods)
         {
+            if (!groupedMethods.Any()) return;
+            
             var firstTab = groupedMethods.First();
             _tabButtons[firstTab.Key].Select();
             ChangeTab(firstTab.Key);

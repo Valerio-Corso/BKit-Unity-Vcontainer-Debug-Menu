@@ -293,5 +293,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bac6039a9d24b06ae2f957fb2cfe16d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PanelContainer: {fileID: 4702110317963963498}
-  TabContainer: {fileID: 7194650548485870131}
+  _panelContainer: {fileID: 4702110317963963498}
+  _tabContainer: {fileID: 7194650548485870131}

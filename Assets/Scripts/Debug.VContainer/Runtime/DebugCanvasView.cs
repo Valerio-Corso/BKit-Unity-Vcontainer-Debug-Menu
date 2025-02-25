@@ -1,33 +1,29 @@
-using System;
 using UnityEngine;
 
 namespace BashoKit.Container.Debug
 {
     public class DebugCanvasView : MonoBehaviour {
+        [SerializeField] Transform _panelContainer;
+        [SerializeField] Transform _tabContainer;
+        
         private Canvas canvas;
-        public Transform PanelContainer;
-        public Transform TabContainer;
+        
+        public Transform PanelContainer => _panelContainer;
+        public Transform TabContainer => _tabContainer;
 
-        private bool _isDebugVisible;
-        private bool isDebugVisible {
-            get => _isDebugVisible;
-            set {
-                _isDebugVisible = value;
-                canvas.enabled = _isDebugVisible;
-            }
+        public void ToggleDebugCanvas() {
+            canvas.enabled = !canvas.enabled;
+        }
+
+        public bool IsVisible => canvas.enabled;
+        
+        public void CloseDebugCanvas() {
+            canvas.enabled = false;
         }
 
         private void Awake() {
             canvas = GetComponent<Canvas>();
-            isDebugVisible = false;
-        }
-
-        private void Update() {
-            if (Input.GetKeyUp(KeyCode.F1)) {
-                isDebugVisible = !isDebugVisible;
-            } else if (isDebugVisible && Input.GetKeyUp(KeyCode.Escape)) {
-                isDebugVisible = false;
-            }
+            canvas.enabled = false;
         }
     }
 }
