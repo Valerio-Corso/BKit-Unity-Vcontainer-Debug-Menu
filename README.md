@@ -1,5 +1,6 @@
 # bkit-unity-debug-menu
 A lightweight simple unity debug menu, it uses an assembly definition to resolve your debug classes and invoke actions.
+You can find a version not using VContainer here: https://github.com/Valerio-Corso/BKit-Unity-Debug-Menu/tree/main
 
 ## Requirements
 - TextMeshPro 3.0.0
